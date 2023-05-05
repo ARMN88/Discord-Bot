@@ -20,6 +20,8 @@ module.exports = {
           { name: 'Weeb', value: config.roles.Weeb },
           { name: 'Gamer', value: config.roles.Gamer },
           { name: 'Cinema', value: config.roles.Cinema },
+          { name: 'Team Jotchua', value: config.roles["Team Jotchua"] },
+          { name: 'Team Jose Luis', value: config.roles["Team Jose Luis"] },
           { name: "Red", value: config.roles.Red },
           { name: "Orange", value: config.roles.Orange },
           { name: "Yellow", value: config.roles.Yellow },
