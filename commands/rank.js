@@ -4,10 +4,9 @@ const { SlashCommandBuilder, AttachmentBuilder } = require('discord.js');
 
 const { MongoClient } = require("mongodb");
 const { join } = require('path')
-const Canvas = require('@napi-rs/canvas');
+const { registerFont, createCanvas, loadImage } = require('canvas');
 
-const { GlobalFonts } = require('@napi-rs/canvas');
-GlobalFonts.registerFromPath(join(__dirname, '..', 'fonts', 'Adumu.ttf'), 'Adumu');
+registerFont(__dirname+'/../fonts/Adumu.ttf', {family: "Adumu"});
 
 const { request } = require('undici');
 
@@ -39,7 +38,7 @@ module.exports = {
 
     const leaderboardRank = orderedUsers.indexOf(orderedUsers.find(element => element.USER_ID === databaseUser.USER_ID));
 
-    const canvas = Canvas.createCanvas(1080, 1920);
+    const canvas = createCanvas(1080, 1920);
     const ctx = canvas.getContext('2d');
 
     const type = databaseUser.TYPE || 'Steel';
@@ -59,7 +58,7 @@ module.exports = {
     ctx.lineTo(680, 875);
     ctx.stroke();
 
-    const typeImage = await Canvas.loadImage(join(__dirname, '..', 'icons', `${(databaseUser.TYPE.toLowerCase() || 'normal')}.png`));
+    const typeImage = await loadImage(join(__dirname, '..', 'icons', `${(databaseUser.TYPE.toLowerCase() || 'normal')}.png`));
     ctx.drawImage(typeImage, canvas.width / 2 - 90, 785, 180, 180);
 
     ctx.lineWidth = 60;
@@ -72,7 +71,7 @@ module.exports = {
     ctx.textBaseline = 'top';
     ctx.fillText(`${discordUser.username}`, canvas.width / 2, 620);
 
-    ctx.font = '110px Adumu';
+    ctx.font = '110px';
     ctx.textBaseline = 'bottom';
     ctx.textAlign = "start";
     ctx.fillText('Rank', 109, 1100);
@@ -100,11 +99,10 @@ module.exports = {
     ctx.closePath();
     ctx.clip();
 
-    const { body } = await request(discordUser.displayAvatarURL({ extension: 'jpg' }));
-    const avatar = await Canvas.loadImage(await body.arrayBuffer());
+    const avatar = await loadImage(discordUser.displayAvatarURL({ extension: 'png' }));
     ctx.drawImage(avatar, canvas.width / 2 - 190, 150, 380, 380);
 
-    const attachment = new AttachmentBuilder(canvas.toBuffer('image/png'), { name: 'profile-image.png' });
+    const attachment = new AttachmentBuilder(canvas.createPNGStream(), { name: 'profile-image.png' });
     return await interaction.editReply({ files: [attachment] });
   },
 };

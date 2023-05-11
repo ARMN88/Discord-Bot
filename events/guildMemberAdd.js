@@ -1,12 +1,9 @@
 const { Events, AttachmentBuilder, EmbedBuilder } = require('discord.js');
 
-const { join } = require('path');
-
 const config = require("../config.json");
 
-const Canvas = require('@napi-rs/canvas');
-const { GlobalFonts } = require('@napi-rs/canvas');
-GlobalFonts.registerFromPath(join(__dirname, '..', 'fonts', 'Pokemon.ttf'), 'Pokemon');
+const { createCanvas, registerFont, loadImage, Image } = require('canvas');
+registerFont(__dirname + '/../fonts/Pokemon.ttf', { family: 'Pokemon' })
 
 const { request } = require('undici');
 
@@ -14,7 +11,8 @@ module.exports = {
   name: Events.GuildMemberAdd,
   async execute(member) {
     const user = await member.fetch();
-    const canvas = Canvas.createCanvas(1080, 720);
+    
+    const canvas = createCanvas(1080, 720);
     const ctx = canvas.getContext('2d');
 
     ctx.fillStyle = "#D4E1EE";
@@ -34,8 +32,6 @@ module.exports = {
     ctx.beginPath();
     ctx.ellipse(790, 300, 230, 50, 0, 0, Math.PI * 2);
     ctx.fill();
-
-    //
 
     ctx.fillStyle = "#EDE8A8";
     ctx.beginPath();
@@ -62,7 +58,7 @@ module.exports = {
     // ctx.lineWidth = 10;
     // roundRect(ctx, 60, 75, 460, 180);
 
-    const avatar1 = await Canvas.loadImage(join(__dirname, "..", "icons", "image.png"));
+    const avatar1 = await loadImage(__dirname + "/../icons/image.png");
     ctx.drawImage(avatar1, 0, 200, 600, 600);
 
     ctx.fillStyle = "#303134";
@@ -105,12 +101,12 @@ module.exports = {
     ctx.closePath();
     ctx.clip();
 
-    const { body } = await request(user.displayAvatarURL({ extension: 'jpg' }));
-    const avatar = await Canvas.loadImage(await body.arrayBuffer());
-    ctx.drawImage(avatar, profile.x - (profile.size / 2), profile.y - (profile.size / 2), profile.size, profile.size);
-
+    const avatar = await loadImage(user.displayAvatarURL({ extension: 'png' }));
+    ctx.drawImage(avatar, profile.x - (profile.size / 2), profile.y - (profile.size / 2), profile.size, profile.size)
+    
+    const attachment = new AttachmentBuilder(canvas.createPNGStream(), { name: 'join-image.png' });
+    
     const welcomeChannel = await member.guild.channels.cache.get(config.channels.welcome);
-    const attachment = new AttachmentBuilder(canvas.toBuffer('image/png'), { name: 'join-image.png' });
     welcomeChannel.send({ content: `A wild <@${user.id}> appeared! Welcome to **The Tall Grass**!`, files: [attachment] });
 
     const trainerRole = await member.guild.roles.cache.get(config.roles.Trainer);
