@@ -12,6 +12,12 @@ app.use(express.static("public"));
 const fs = require('node:fs');
 const path = require('node:path');
 
+app.get('/log', (req, res) => {
+  if (!fs.existsSync(__dirname + "/nohup.out")) return;
+  const consoleOutput = fs.readFileSync(__dirname + "/nohup.out", "utf-8");
+  res.send(consoleOutput.split('\n').join('<br/>'));
+});
+
 const { Client, GatewayIntentBits, Collection } = require('discord.js');
 
 const client = new Client({
