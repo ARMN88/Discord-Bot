@@ -6,7 +6,7 @@ const { MongoClient } = require("mongodb");
 const { join } = require('path')
 const { registerFont, createCanvas, loadImage } = require('canvas');
 
-registerFont(__dirname+'/../fonts/Adumu.ttf', {family: "Adumu"});
+registerFont(__dirname + '/../fonts/Adumu.ttf', { family: "Adumu" });
 
 const { request } = require('undici');
 
@@ -32,7 +32,7 @@ module.exports = {
     if (!databaseUser) {
       return await interaction.editReply(`User **${discordUser.tag}** has no data.`);
     }
-    
+
     let orderedUsers = await users.find().sort({ LEVEL: 1, SCORE: 1 }).toArray();
     orderedUsers.reverse();
 
@@ -71,7 +71,7 @@ module.exports = {
     ctx.textBaseline = 'top';
     ctx.fillText(`${discordUser.username}`, canvas.width / 2, 620);
 
-    ctx.font = '110px';
+    ctx.font = '90px';
     ctx.textBaseline = 'bottom';
     ctx.textAlign = "start";
     ctx.fillText('Rank', 109, 1100);
