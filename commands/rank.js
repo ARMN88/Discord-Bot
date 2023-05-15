@@ -71,7 +71,7 @@ module.exports = {
     ctx.textBaseline = 'top';
     ctx.fillText(`${discordUser.username}`, canvas.width / 2, 620);
 
-    ctx.font = '90px';
+    ctx.font = '105px Adumu';
     ctx.textBaseline = 'bottom';
     ctx.textAlign = "start";
     ctx.fillText('Rank', 109, 1100);
