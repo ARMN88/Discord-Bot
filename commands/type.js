@@ -1,11 +1,37 @@
-const config = require("../config.json");
-
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const config = require("../config.json");
+const { Sequelize, DataTypes } = require('sequelize');
 
-const { MongoClient } = require("mongodb");
-const client = new MongoClient(config.database.uri);
-const database = client.db('TallGrassBot');
-const users = database.collection('UserInfo');
+const database = new Sequelize({
+  dialect: 'sqlite',
+  storage: 'users.db',
+  logging: false,
+  query: {
+    raw: true
+  }
+});
+
+const Users = database.define('Users', {
+  userId: {
+    type: DataTypes.TEXT
+  },
+  level: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0
+  },
+  score: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0
+  },
+  pokemonType: {
+    type: DataTypes.TEXT,
+    defaultValue: ''
+  },
+  timeout: {
+    type: DataTypes.TEXT,
+    defaultValue: '0'
+  }
+}, { timestamps: false });
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -37,29 +63,15 @@ module.exports = {
   async execute(interaction) {
     if (interaction.channelId !== config.channels.roles) return await interaction.reply({content: `Please use <#${config.channels.roles}>.`, ephemeral: true})
     
-    let user = await users.findOne({ USER_ID: interaction.member.id });
+    let user = await Users.findOne({ where: { userId: interaction.member.id } })
     if (!user) {
-      await users.insertOne({
-        USER_ID: interaction.member.id,
-        SCORE: 0,
-        LEVEL: 1,
-        TOTAL: 0,
-        TIMEOUT: 0,
-        TYPE: ''
-      });
-      user = await users.findOne({ USER_ID: interaction.member.id });
+      await Users.create({ userId: interaction.member.id });
+      user = await Users.findOne({ where: { userId: interaction.member.id } });
     }
     
     const selectedId = await interaction.options.getString('types');
     if(!selectedId) {
-      await users.updateOne(
-        { USER_ID: interaction.member.id },
-        {
-          $set: {
-            'TYPE': ''
-          }
-        }
-      );
+      await Users.update({ pokemonType: '' }, { where: { userId: interaction.member.id }})
       for(let type of Object.values(config.roles.types)) {
         if(interaction.member.roles.cache.has(type)) {
           interaction.member.roles.remove(type);
@@ -71,14 +83,7 @@ module.exports = {
     }
 
     let selectedRole = await interaction.guild.roles.cache.get(selectedId);
-    await users.updateOne(
-      { USER_ID: interaction.member.id },
-      {
-        $set: {
-          'TYPE': selectedRole.name
-        }
-      }
-    );
+    await Users.update({ pokemonType: selectedRole.name }, { where: { userId: interaction.member.id }});
 
     for(let type of Object.values(config.roles.types)) {
       if(interaction.member.roles.cache.has(type)) {
@@ -87,9 +92,9 @@ module.exports = {
       }
     }
 
-    if (user.LEVEL >= 30) {
+    if (user.level >= 30) {
       selectedRole = interaction.guild.roles.cache.find(role => role.name === selectedRole.name + " Stage 2");
-    } else if (user.LEVEL >= 15) {
+    } else if (user.level >= 15) {
       selectedRole = interaction.guild.roles.cache.find(role => role.name === selectedRole.name + " Stage 1");
     }
     interaction.member.roles.add(selectedRole);

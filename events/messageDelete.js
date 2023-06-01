@@ -12,8 +12,19 @@ module.exports = {
       .setColor(0xFC3232)
       .setURL(message.channel.url)
       .setAuthor({ name: message.author.tag, iconURL: message.author.avatarURL() })
-      .setDescription(message.content || 'None')
-      .setTimestamp();
+      .addFields(
+        { name: 'Message', value: message.content || 'None' }
+      ).setTimestamp();
+
+    if(message.attachments.length) {
+      let attachmentData = '';
+      message.attachments.forEach(attachment => {
+        attachmentData += `${attachment.attachment}\n\n`
+      });
+      messageEmbed.addFields(
+        { name: 'Attachments', value: attachmentData }
+      )
+    }
 
     const channel = message.guild.channels.cache.get(config.channels.audit_logs);
     channel.send({ embeds: [messageEmbed] });

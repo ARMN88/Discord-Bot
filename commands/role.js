@@ -1,11 +1,34 @@
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { Sequelize, DataTypes } = require('sequelize');
 const config = require("../config.json");
 
-const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const database = new Sequelize({
+  dialect: 'sqlite',
+  storage: 'users.db',
+  logging: false,
+  query: {
+    raw: true
+  }
+});
 
-const { MongoClient } = require("mongodb");
-const client = new MongoClient(config.database.uri);
-const database = client.db('TallGrassBot');
-const users = database.collection('UserInfo');
+const Users = database.define('Users', {
+  userId: {
+    type: DataTypes.TEXT
+  },
+  level: {
+    type: DataTypes.INTEGER
+  },
+  score: {
+    type: DataTypes.INTEGER
+  },
+  pokemonType: {
+    type: DataTypes.TEXT
+  },
+  timeout: {
+    type: DataTypes.TEXT,
+    defaultValue: '0'
+  }
+}, { timestamps: false });
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -33,9 +56,9 @@ module.exports = {
     // Check if the user is in #roles //
     if (interaction.channelId !== config.channels.roles) return await interaction.reply({content: `Please use <#${config.channels.roles}>.`, ephemeral: true})
 
-    const user = await users.findOne({ USER_ID: interaction.member.id });
+    const user = await Users.findOne({ where: { userId: interaction.member.id }});
     if(!user) return await interaction.reply({content: `You must be Level 10 or higher.`, ephemeral: true});
-    if(user.LEVEL < 10) return await interaction.reply({content: `You must be Level 10 or higher. Only ${10 - user.LEVEL} level(s) to go!`, ephemeral: true});
+    if(user.level < 10) return await interaction.reply({content: `You must be Level 10 or higher. Only ${10 - user.LEVEL} level(s) to go!`, ephemeral: true});
     // Get Selected Role //
     const selectedRole = interaction.options.getString('role');
 

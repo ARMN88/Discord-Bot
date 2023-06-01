@@ -5,7 +5,7 @@ const config = require("../config.json");
 module.exports = {
   name: Events.MessageUpdate,
   async execute(oldMessage, newMessage) {
-    if (newMessage.author.bot || oldMessage.channel.id === config.channels.woke) return;
+    if (newMessage.author.bot || oldMessage.channel.id === config.channels.woke || oldMessage.content === newMessage.content) return;
 
 
     const messageEmbed = new EmbedBuilder()
@@ -15,7 +15,7 @@ module.exports = {
       .setAuthor({ name: newMessage.author.tag, iconURL: newMessage.author.avatarURL() })
       .addFields(
         { name: "Original Message", value: oldMessage.content || 'None' },
-        { name: "New Message", value: newMessage.content || 'None' },
+        { name: "New Message", value: newMessage.content || 'None' }
       )
       .setTimestamp();
 

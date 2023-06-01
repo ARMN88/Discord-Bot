@@ -1,16 +1,42 @@
-const config = require("../config.json");
-
 const { SlashCommandBuilder, AttachmentBuilder } = require('discord.js');
-
-const { MongoClient } = require("mongodb");
+const config = require("../config.json");
 const { join } = require('path')
 const { registerFont, createCanvas, loadImage } = require('canvas');
+const { request } = require('undici');
+const { Sequelize, DataTypes } = require('sequelize');
 
 registerFont(__dirname + '/../fonts/Adumu.ttf', { family: "Adumu" });
 
-const { request } = require('undici');
+const database = new Sequelize({
+  dialect: 'sqlite',
+  storage: 'users.db',
+  logging: false,
+  query: {
+    raw: true
+  }
+});
 
-const client = new MongoClient(config.database.uri);
+const Users = database.define('Users', {
+  userId: {
+    type: DataTypes.TEXT
+  },
+  level: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0
+  },
+  score: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0
+  },
+  pokemonType: {
+    type: DataTypes.TEXT,
+    defaultValue: ''
+  },
+  timeout: {
+    type: DataTypes.TEXT,
+    defaultValue: '0'
+  }
+}, { timestamps: false });
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -24,24 +50,21 @@ module.exports = {
   async execute(interaction) {
     if (interaction.channelId !== config.channels.bots) return await interaction.reply({ content: `Please use <#${config.channels.bots}>.`, ephemeral: true });
     await interaction.deferReply();
-    const database = client.db('TallGrassBot');
-    const users = database.collection('UserInfo');
-    const discordUser = await interaction.options.getUser('user') || interaction.user;
+        const discordUser = await interaction.options.getUser('user') || interaction.user;
 
-    const databaseUser = await users.findOne({ USER_ID: discordUser.id });
+    const databaseUser = await Users.findOne({ where: { userId: discordUser.id } })
     if (!databaseUser) {
       return await interaction.editReply(`User **${discordUser.tag}** has no data.`);
     }
 
-    let orderedUsers = await users.find().sort({ LEVEL: 1, SCORE: 1 }).toArray();
-    orderedUsers.reverse();
+    let orderedUsers = await Users.findAll({ order: [['level', 'DESC'], ['score', 'DESC']] });
 
-    const leaderboardRank = orderedUsers.indexOf(orderedUsers.find(element => element.USER_ID === databaseUser.USER_ID));
+    const leaderboardRank = orderedUsers.indexOf(orderedUsers.find(element => element.userId === databaseUser.userId));
 
     const canvas = createCanvas(1080, 1920);
     const ctx = canvas.getContext('2d');
 
-    const type = databaseUser.TYPE || 'Steel';
+    const type = databaseUser.pokemonType || 'Steel';
     ctx.fillStyle = changeColorAlpha(config.colors[type], 0.2);
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -58,7 +81,7 @@ module.exports = {
     ctx.lineTo(680, 875);
     ctx.stroke();
 
-    const typeImage = await loadImage(join(__dirname, '..', 'icons', `${(databaseUser.TYPE.toLowerCase() || 'normal')}.png`));
+    const typeImage = await loadImage(join(__dirname, '..', 'icons', `${(databaseUser.pokemonType.toLowerCase() || 'normal')}.png`));
     ctx.drawImage(typeImage, canvas.width / 2 - 90, 785, 180, 180);
 
     ctx.lineWidth = 60;
@@ -81,12 +104,12 @@ module.exports = {
     ctx.textAlign = "start";
     ctx.fillText('Level', 109, 1400);
     ctx.textAlign = "end";
-    ctx.fillText(`${databaseUser.LEVEL}`, 970, 1400);
+    ctx.fillText(`${databaseUser.level}`, 970, 1400);
 
     ctx.textAlign = "start";
     ctx.fillText('XP', 109, 1700);
     ctx.textAlign = "end";
-    ctx.fillText(`${databaseUser.SCORE}/${databaseUser.LEVEL * 100}`, 970, 1700);
+    ctx.fillText(`${databaseUser.score}/${databaseUser.level * 100}`, 970, 1700);
 
     ctx.strokeStyle = config.colors[type];
     ctx.lineWidth = canvas.width * (1 / 20);
