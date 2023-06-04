@@ -107,7 +107,7 @@ module.exports = {
     const attachment = new AttachmentBuilder(canvas.createPNGStream(), { name: 'join-image.png' });
     
     const welcomeChannel = await member.guild.channels.cache.get(config.channels.welcome);
-    welcomeChannel.send({ content: `A wild <@${user.id}> appeared! Welcome to **The Tall Grass**!`, files: [attachment] });
+    welcomeChannel.send({ content: `A wild <@${user.id}> appeared! Welcome to **The Tall Grass**! :arabgroove:`, files: [attachment] });
 
     const trainerRole = await member.guild.roles.cache.get(config.roles.Trainer);
     member.roles.add(trainerRole);
