@@ -14,8 +14,8 @@ module.exports = {
       .setURL(newMessage.url)
       .setAuthor({ name: newMessage.author.tag, iconURL: newMessage.author.avatarURL() })
       .addFields(
-        { name: "Original Message", value: oldMessage.content || 'None' },
-        { name: "New Message", value: newMessage.content || 'None' }
+        { name: "Original Message", value: oldMessage.content.substring(0, 1024) || 'None' },
+        { name: "New Message", value: newMessage.content.substring(0, 1024) || 'None' }
       )
       .setTimestamp();
 

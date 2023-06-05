@@ -13,7 +13,7 @@ module.exports = {
       .setURL(message.channel.url)
       .setAuthor({ name: message.author.tag, iconURL: message.author.avatarURL() })
       .addFields(
-        { name: 'Message', value: message.content || 'None' }
+        { name: 'Message', value: message.content.substring(0, 1024) || 'None' }
       ).setTimestamp();
 
     if(message.attachments.length) {
