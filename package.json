@@ -12,6 +12,7 @@
   "dependencies": {
     "canvas": "^2.11.2",
     "discord.js": "^14.7.1",
+    "dotenv": "^16.1.4",
     "express": "^4.18.2",
     "fs": "^0.0.1-security",
     "mongodb": "^4.12.1",
