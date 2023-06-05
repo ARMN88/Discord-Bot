@@ -11,7 +11,7 @@ module.exports = {
   name: Events.GuildMemberAdd,
   async execute(member) {
     const user = await member.fetch();
-    
+
     const canvas = createCanvas(1080, 720);
     const ctx = canvas.getContext('2d');
 
@@ -103,11 +103,11 @@ module.exports = {
 
     const avatar = await loadImage(user.displayAvatarURL({ extension: 'png' }));
     ctx.drawImage(avatar, profile.x - (profile.size / 2), profile.y - (profile.size / 2), profile.size, profile.size)
-    
+
     const attachment = new AttachmentBuilder(canvas.createPNGStream(), { name: 'join-image.png' });
-    
+
     const welcomeChannel = await member.guild.channels.cache.get(config.channels.welcome);
-    welcomeChannel.send({ content: `A wild <@${user.id}> appeared! Welcome to **The Tall Grass**! :arabgroove:`, files: [attachment] });
+    welcomeChannel.send({ content: `A wild <@${user.id}> appeared! Welcome to **The Tall Grass**! <a:arabgroove:953990302799130665>`, files: [attachment] });
 
     const trainerRole = await member.guild.roles.cache.get(config.roles.Trainer);
     member.roles.add(trainerRole);
@@ -118,8 +118,8 @@ module.exports = {
       .setAuthor({ name: `${member.user.tag}`, iconURL: user.displayAvatarURL() })
       .setDescription(`<@${member.user.id}> joined!`)
       .addFields(
-        { name: 'Joined Server', value: `<t:${Math.floor(member.joinedTimestamp/1000)}:F>` },
-        { name: 'Account Created', value: `<t:${Math.floor(member.user.createdTimestamp/1000)}:R>`, },
+        { name: 'Joined Server', value: `<t:${Math.floor(member.joinedTimestamp / 1000)}:F>` },
+        { name: 'Account Created', value: `<t:${Math.floor(member.user.createdTimestamp / 1000)}:R>`, },
         { name: 'Member Count', value: `${user.guild.memberCount} Members`, },
       )
       .setTimestamp()
